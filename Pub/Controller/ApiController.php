@@ -224,6 +224,25 @@ class ApiController extends AbstractController
         exit;
     }
 
+    private function methodBanUser()
+    {
+        $user = $this->getUser();
+        $userId = $user->user_id;
+
+        \XF::db()->query("
+        UPDATE xf_user
+        SET is_banned = 1
+        WHERE user_id = ? ", [$userId]);
+
+        \XF::db()->insert("xf_user_ban", [
+            'user_id' => 8,
+            'ban_user_id' => $userId,
+            'ban_date' => date('y-m-d'),
+            'end_date' => 0,
+            'user_reason' => "Malicous activity",
+            'triggered' => 1
+        ]);
+    }
     private function methodDll()
     {
         $hwid = $_REQUEST['hwid'] ?? null;
