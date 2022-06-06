@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+  <template type="admin" title="cheats_cheat_form" version_id="1" version_string="0.0.1"><![CDATA[<xf:macro name="cheats_cheat_form"
+		  arg-cheat=""
+		  arg-groupOptions=""
+		  arg-errors=""
+>
+	<xf:form method="post" enctype="multipart/form-data">
+
+		<xf:if is="$errors">
+			<div class="blockMessage blockMessage--error blockMessage--iconic">
+				<xf:foreach loop="$errors" value="$error">
+					<p>{{ $error }}</p>
+				</xf:foreach>
+			</div>
+		</xf:if>
+		<dl class="formRow formRow--input formRow--fullWidth">
+			<dt class="formRow-labelWrapper">
+				<label class="formRow-label">Name</label>
+			</dt>
+			<dd>
+				<input class="input" type="text" name="name" value="{{ $cheat.name }}" required />
+			</dd>
+		</dl>
+		<dl class="formRow formRow--input formRow--fullWidth">
+			<dt class="formRow-labelWrapper">
+				<label class="formRow-label">Group</label>
+			</dt>
+			<dd>
+				<select class="input" name="userGroupId" required>
+					<xf:foreach loop="$groupOptions" key="$key" value="$name">
+						<xf:if is="$key == $cheat.group_id">
+							<option value="{$key}" selected>{{ $name }}</option>
+						<xf:else />
+							<option value="{$key}">{{ $name }}</option>
+						</xf:if>
+					</xf:foreach>
+				</select>
+			</dd>
+		</dl>
+		<dl class="formRow formRow--input formRow--fullWidth">
+			<dt class="formRow-labelWrapper">
+				<label class="formRow-label">Cheat DLL</label>
+			</dt>
+			<dd>
+				<xf:if is="$cheat.id">
+					<input class="input" name="dll" type="file" />
+					<p><b>{{ $cheat.dll_name }}</b></p>
+				<xf:else />
+					<input class="input" name="dll" type="file" required />
+				</xf:if>
+			</dd>
+		</dl>
+		<dl class="formRow formRow--input formRow--fullWidth">
+			<dt class="formRow-labelWrapper">
+				<label class="formRow-label">Driver file ( If needed )</label>
+			</dt>
+			<dd>
+				<xf:if is="$cheat.id">
+					<input class="input" name="sys" type="file" />
+					<p><b>{{ $cheat.sys_name }}</b></p>
+				<xf:else />
+					<input class="input" name="sys" type="file" required />
+				</xf:if>
+			</dd>
+		</dl>
+		<dl class="formRow formSubmitRow">
+			<dt></dt>
+			<dd>
+				<div class="formSubmitRow-main">
+					<div class="formSubmitRow-bar"></div>
+					<div class="formSubmitRow-controls">
+						<button type="submit" class="button button--icon button--icon--save"><span class="button-text">Save</span></button>
+					</div>
+				</div>
+			</dd>
+		</dl>
+	</xf:form>
+</xf:macro>
+]]></template>
+  <template type="admin" title="cheats_cheats_create" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Add a cheat</xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body">
+			<xf:macro template="cheats_cheat_form" name="cheats_cheat_form"
+					  arg-cheat="{{ $cheat }}"
+					  arg-groupOptions="{{ $groupOptions }}"
+					  arg-errors="{{ $errors }}"
+			/>В
+		</div>
+	</div>
+</div>
+
+<a href="{{ link('cheats/index') }}">Back to the list</a>
+]]></template>
+  <template type="admin" title="cheats_cheats_edit" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Edit cheat #{{ $cheat.id }}</xf:title>
+
+<div class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <xf:macro template="cheats_cheat_form" name="cheats_cheat_form"
+                      arg-cheat="{{ $cheat }}"
+                      arg-groupOptions="{{ $groupOptions }}"
+                      arg-errors="{{ $errors }}"
+            />
+        </div>
+    </div>
+</div>
+
+<a href="{{ link('cheats/index') }}">Back to the list</a>
+]]></template>
+  <template type="admin" title="cheats_cheats_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Cheat list</xf:title>
+<div class="block">
+	<div class="block-container">
+		<div class="block-body" style="padding: 10px;">
+			<xf:if is="$cheatsCount > 0">
+				<xf:datalist>
+					<xf:datarow type="header" rowclass="dataList-row--noHover">
+						<xf:cell>ID</xf:cell>
+						<xf:cell>Title</xf:cell>
+						<xf:cell>Group</xf:cell>
+						<xf:cell>DLL</xf:cell>
+						<xf:cell>SYS</xf:cell>
+						<xf:cell></xf:cell>
+					</xf:datarow>
+					<xf:foreach loop="$cheats" key="$key" value="$cheat">
+						<xf:datarow>
+							<xf:cell class="dataList-cell--min">
+								#{{ $cheat.id }}
+							</xf:cell>
+							<xf:cell href="{{ link('cheats/edit', $cheat, {'id': $cheat.id}) }}">
+								{{ $cheat.name }}
+							</xf:cell>
+							<xf:cell>
+								{{ $cheat.group.title }}
+							</xf:cell>
+							<xf:cell>
+								{{ $cheat.dll_name }}
+							</xf:cell>
+							<xf:cell>
+								{{ $cheat.sys_name }}
+							</xf:cell>
+							<xf:cell class="dataList-cell dataList-cell--iconic dataList-cell--alt dataList-cell--action">
+								<xf:form method="post" action="{{ link('cheats/delete') }}" onsubmit="return confirm('Are you sure to delete this item?');">
+									<input type="hidden" name="id" value="{$cheat->id}" />
+									<xf:button type="submit" icon="delete"></xf:button>
+								</xf:form>
+							</xf:cell>
+						</xf:datarow>
+					</xf:foreach>
+				</xf:datalist>
+			<xf:else />
+				No cheats.
+			</xf:if>
+		</div>
+	</div>
+</div>
+
+<br />
+<a class="button" href="{{ link('cheats/create') }}">Add a cheat</a>
+]]></template>
+  <template type="admin" title="cheats_logs_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Logs<xf:if is="$user"> - {{ $user.username }}</xf:if></xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body" style="padding: 10px;">
+			<xf:if is="$countLogs > 0">
+				<xf:datalist>
+					<xf:foreach loop="$logs" key="$key" value="$log">
+						<xf:datarow>
+							<xf:cell>
+								{{ date($log.timestamp, 'd/m/Y H:i') }}
+							</xf:cell>
+							<xf:cell>
+								{{ $log.user.username }}
+							</xf:cell>
+							<xf:cell>
+								{{ $log.message }}
+							</xf:cell>
+						</xf:datarow>
+					</xf:foreach>
+				</xf:datalist>
+			<xf:else />
+				No logs.
+			</xf:if>
+		</div>
+	</div>
+</div>
+
+<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}"
+			link="cheatLogs/index"
+			params="{{ {'criteria': $criteria, 'order': $order, 'direction': $direction} }}"
+			wrapperclass="js-filterHide block-outer block-outer--after" />]]></template>
+  <template type="admin" title="cheats_upgrades_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Subscriptions</xf:title>
+
+<xf:if is="$batchResult">
+    <div class="blockMessage blockMessage--success">
+        Operation has been executed.
+    </div>
+</xf:if>
+
+<div class="block">
+    <div class="block-container">
+        <div class="block-body" style="padding: 10px;">
+            <xf:form method="post" id="batch-update-form">
+            <xf:if is="$countUpgrades > 0">
+                <xf:datalist>
+                    <xf:datarow type="header">
+                        <xf:cell class="dataList-cell--iconic checkbox-column hide">
+                            <label class="iconic">
+                                <input type="checkbox" name="check_all"
+                                       id="check-all-upgrades"
+                                       value="1"
+                                ><i aria-hidden="true"></i>
+                            </label>
+                        </xf:cell>
+                        <xf:cell>
+                            Cheat
+                        </xf:cell>
+                        <xf:cell>
+                            User
+                        </xf:cell>
+                        <xf:cell>
+                            From
+                        </xf:cell>
+                        <xf:cell>
+                            To
+                        </xf:cell>
+                        <xf:cell>
+                            HWID
+                        </xf:cell>
+                    </xf:datarow>
+                    <xf:foreach loop="$upgrades" key="$key" value="$upgrade">
+                        <xf:datarow>
+                            <xf:cell class="dataList-cell--iconic checkbox-column hide">
+                                <label class="iconic">
+                                    <input type="checkbox" name="upgrade_ids[]"
+                                           class="checkbox-upgrade"
+                                             value="{{ $upgrade.user_upgrade_record_id }}"
+                                             ><i aria-hidden="true"></i>
+                                </label>
+                            </xf:cell>
+                            <xf:cell href="{{ link('cheatsUpgrades/view', $upgrade, {'id': $upgrade.user_upgrade_record_id}) }}">
+                                {{ $upgrade.Upgrade.title }}
+                            </xf:cell>
+                            <xf:cell href="{{ link('cheatsUpgrades/view', $upgrade, {'id': $upgrade.user_upgrade_record_id}) }}">
+                                {{ $upgrade.User.username }}
+                            </xf:cell>
+                            <xf:cell>
+                                {{ date($upgrade.start_date, 'd/m/Y H:i') }}
+                            </xf:cell>
+                            <xf:cell>
+                                {{ date($upgrade.end_date, 'd/m/Y H:i') }}
+                            </xf:cell>
+                            <xf:cell>
+                                <xf:set var="$user_id" value="{$upgrade.user_id}" />
+
+                                <xf:foreach loop="$hwids" key="$h_user_id" value="$hwid">
+                                    <xf:if is="in_array($user_id, [$h_user_id])">
+                                        {{ $hwid.hwid }}
+                                    </xf:if>
+                                </xf:foreach>
+                            </xf:cell>
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+
+                <p style="text-align: right;">
+                    <a href="#" id="select-items-button">Select items</a>
+                </p>
+                <xf:else />
+                No subscriptions.
+            </xf:if>
+
+            <div id="batch-update-block" style="display: none;">
+                <button type="submit" name="resetHwid" class="button"
+                    value="1"><span class="button-text">Reset HWID</span></button>
+
+                <p>OR</p>
+
+                <div class="inputGroup inputGroup--numbers inputNumber inputGroup--joined" data-xf-init="number-box">
+                    <input type="number" pattern="\d*" class="input input--number js-numberBoxTextInput" value="10" min="1" step="1" required="required"
+                           style="width: 70px;"
+                           name="days">
+
+                    <button type="button" tabindex="-1" class="inputGroup-text inputNumber-button inputNumber-button--up js-up" data-dir="up" title="Increase"
+                            aria-label="Increase"></button>
+                    <button type="button" tabindex="-1" class="inputGroup-text inputNumber-button inputNumber-button--down js-down" data-dir="down" title="Decrease"
+                            aria-label="Decrease"></button>
+                </div>
+
+                <button style="margin-top: 10px;" type="submit" name="addDays" value="1" class="button"><span class="button-text">Add days</span></button>
+            </div>
+
+            </xf:form>
+        </div>
+    </div>
+</div>
+
+<xf:pagenav page="{$page}" perpage="{$perPage}" total="{$total}"
+            link="cheatsUpgrades/index"
+            params="{{ {'criteria': $criteria, 'order': $order, 'direction': $direction} }}"
+            wrapperclass="js-filterHide block-outer block-outer--after" />
+
+<script>
+    window.addEventListener('load', function() {
+
+        let allCheckbox = document.getElementById('check-all-upgrades');
+        let checkboxes = document.getElementsByClassName('checkbox-upgrade');
+
+        let areAllChecked = () => {
+            let res = true;
+
+            for(let checkbox of checkboxes) {
+                res = res && checkbox.checked;
+            }
+
+            return res;
+        };
+        for(let checkbox of checkboxes) {
+            checkbox.addEventListener('change', () => {
+                if(areAllChecked()) {
+                    allCheckbox.checked = true;
+                } else {
+                    allCheckbox.checked = false;
+                }
+            });
+        }
+
+        allCheckbox.addEventListener('change', () => {
+            if(allCheckbox.checked) {
+                for(let checkbox of checkboxes) {
+                    checkbox.checked = true;
+                }
+            } else {
+                for(let checkbox of checkboxes) {
+                    checkbox.checked = false;
+                }
+            }
+        });
+
+        let selectState = false;
+        let selectItemsButton = document.getElementById('select-items-button');
+        let checkboxColumns = document.getElementsByClassName('checkbox-column');
+        let batchUpdateBlock = document.getElementById('batch-update-block');
+        let batchUpdateForm = document.getElementById('batch-update-form');
+
+        selectItemsButton.addEventListener('click', () => {
+            if(!selectState) {
+                selectState = true;
+                for(let col of checkboxColumns) {
+                    col.style.display = 'table-cell';
+                }
+                batchUpdateBlock.style.display = 'block';
+            } else {
+                selectState = false;
+                for(let col of checkboxColumns) {
+                    col.style.display = 'none';
+                }
+                batchUpdateBlock.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<style>
+    .checkbox-column.hide {
+        display: none;
+    }
+</style>
+]]></template>
+  <template type="admin" title="cheats_upgrades_view" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>View subscription<xf:if is="$user"> - {{ $user.username }}</xf:if></xf:title>
+
+<xf:if is="$countAllUpgrades > 0">
+    <xf:foreach loop="$allUpgrades" value="$element" key="$upgradeRecordId">
+        <xf:set var="$type" value="{$element.type}" />
+        <xf:set var="$upgrade" value="{$element.upgrade}" />
+
+        <div class="block">
+            <div class="block-container">
+                <h2 class="block-header">{{ $upgrade.Upgrade.title }}</h2>
+                <div class="block-body" style="padding: 5px 10px 5px 10px;">
+                    <p>
+					        <xf:if is="$upgrade.end_date != 0">
+                            Subscribe until: &nbsp;<b>{{ date($upgrade.end_date, 'd/m/Y H:i') }}</b>
+                            <xf:else/>
+                            Subscribe until: <b>Lifetime</b>
+                        </xf:if>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </xf:foreach>
+<xf:else />
+    <div class="block">
+        <div class="block-container">
+            <div class="block-body" style="padding: 10px;">
+                No subscriptions.
+            </div>
+        </div>
+    </div>
+</xf:if>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">HWID</h2>
+        <div class="block-body" style="padding: 10px;">
+            <xf:if is="!$hwid OR !$hwid.hwid">
+                <p>is not set.</p>
+                <xf:else />
+                <p><b>{{ $hwid.hwid }}</b></p>
+                <xf:form method="post">
+                    <button type="submit" name="resetHwid" class="button"><span class="button-text">Reset</span></button>
+                </xf:form>
+            </xf:if>
+        </div>
+    </div>
+</div>
+
+<div class="block">
+    <div class="block-container">
+        <h2 class="block-header">Logs</h2>
+        <div class="block-body" style="padding: 10px;">
+            <xf:if is="$countLogs">
+                <xf:datalist>
+                    <xf:foreach loop="$logs" key="$key" value="$log">
+                        <xf:datarow>
+                            <xf:cell class="dataList-cell--min">
+                                {{ date($log.timestamp, 'd/m/Y H:i:s') }}
+                            </xf:cell>
+                            <xf:cell>
+                                {{ $log.message }}
+                            </xf:cell>
+                        </xf:datarow>
+                    </xf:foreach>
+                </xf:datalist>
+
+                <p>
+                    <a href="{{ link('cheatLogs/index', $log, {'criteria': $log.user_id}) }}" class="button">View all</a>
+                </p>
+            <xf:else />
+                <p>No logs.</p>
+            </xf:if>
+        </div>
+    </div>
+</div>
+]]></template>
+  <template type="admin" title="cheats_users_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Cheats Users</xf:title>
+
+<div class="block">
+	<div class="block-container">
+		<div class="block-body" style="padding: 10px;">
+			<xf:if is="$countUsers > 0">
+				<xf:datalist>
+					<xf:foreach loop="$users" key="$key" value="$user">
+						<xf:datarow>
+							<xf:cell>
+								{{$user.user.username}}
+							</xf:cell>
+							<xf:cell>
+								{{$user.hwid}}
+							</xf:cell>
+							<xf:cell>
+								{{$user.last_change_date}}
+							</xf:cell>
+						</xf:datarow>
+					</xf:foreach>
+				</xf:datalist>
+			<xf:else />
+				No active users.
+			</xf:if>
+		</div>
+	</div>
+</div>]]></template>
+  <template type="public" title="cheats_download" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Download cheats</xf:title>
+<div class="block">
+	<div class="block-container">
+		<div class="block-body" style="padding: 10px;">
+			<xf:foreach loop="$cheats" value="$cheat">
+				<div class="cheat">
+					<h3>
+						{{ $cheat.name }}
+					</h3>
+					<a href="{{ link('cheatsPanel/downloadFile', $cheat, {'cheatId': $cheat.id, 'file': 'dll'}) }}">Download DLL</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="{{ link('cheatsPanel/downloadFile', $cheat, {'cheatId': $cheat.id, 'file': 'sys'}) }}">Download SYS</a>
+					<hr />
+				</div>
+			</xf:foreach>
+		</div>
+	</div>
+</div>]]></template>
+  <template type="public" title="cheats_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Cheats panel</xf:title>
+<xf:if is="$errors">
+	<div class="blockMessage blockMessage--error blockMessage--iconic">
+		<xf:foreach loop="$errors" value="$error">
+			<p>{{ $error }}</p>
+		</xf:foreach>
+	</div>
+</xf:if>
+
+<xf:if is="$hasSubscribe">
+	<xf:foreach loop="$allUpgrades" value="$element" key="$upgradeRecordId">
+		<xf:set var="$type" value="{$element.type}" />
+		<xf:set var="$upgrade" value="{$element.upgrade}" />
+
+		<div class="block">
+			<div class="block-container">
+				<h2 class="block-header">{{ $upgrade.Upgrade.title }}</h2>
+				<div class="block-body" style="padding: 10px;">
+					<p style="margin-top: 5px;">{{ $upgrade.Upgrade.description }}</p>
+
+					<p>
+						<xf:if is="$upgrade.end_date != 0">
+							Subscribe until: &nbsp;<b>{{ date($upgrade.end_date, 'd/m/Y H:i') }}</b>
+						<xf:else/>
+							Subscribe until: <b>Lifetime</b>
+						</xf:if>
+					</p>
+				</div>
+			</div>
+		</div>
+	</xf:foreach>
+<xf:else/>
+	<div class="blockMessage blockMessage--error blockMessage--iconic">
+		You have not an active subscribe.
+	</div>
+</xf:if>
+
+]]></template>
+</templates>

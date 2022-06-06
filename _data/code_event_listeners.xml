@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<code_event_listeners>
+  <listener event_id="navigation_setup" execute_order="10" callback_class="CheatSite\Listener" callback_method="navigationSetup" active="1" description="Add links to CheatSite functions"/>
+</code_event_listeners>

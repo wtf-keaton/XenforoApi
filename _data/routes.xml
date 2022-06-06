@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<routes>
+  <route route_type="admin" route_prefix="cheatLogs" sub_name="index" controller="CheatSite:LogsController" context="cheats"/>
+  <route route_type="admin" route_prefix="cheats" sub_name="cheats_index" controller="CheatSite:CheatsController" context="cheats"/>
+  <route route_type="admin" route_prefix="cheatsUpgrades" controller="CheatSite:UpgradesController" context="cheats"/>
+  <route route_type="admin" route_prefix="cheatsUsers" controller="CheatSite:UsersController" context="cheats"/>
+  <route route_type="public" route_prefix="cheats" sub_name="api" controller="CheatSite:ApiController"/>
+  <route route_type="public" route_prefix="cheatsPanel" controller="CheatSite:PanelController"/>
+</routes>

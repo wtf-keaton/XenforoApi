@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<admin_navigation>
+  <admin_navigation_entry navigation_id="cheats" display_order="250" link="cheats/" icon="fa-book" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="cheats_cheats_index" parent_navigation_id="cheats" display_order="1" link="cheats/index" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="cheats_logs_index" parent_navigation_id="cheats" display_order="3" link="cheatLogs/index" debug_only="0" development_only="0" hide_no_children="0"/>
+  <admin_navigation_entry navigation_id="cheats_upgrades_index" parent_navigation_id="cheats" display_order="2" link="cheatsUpgrades/index" debug_only="0" development_only="0" hide_no_children="0"/>
+</admin_navigation>

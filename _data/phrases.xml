@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phrases>
+  <phrase title="admin_navigation.cheats" version_id="1" version_string="0.0.1"><![CDATA[Cheats]]></phrase>
+  <phrase title="admin_navigation.cheats_cheats_index" version_id="1" version_string="0.0.1"><![CDATA[Cheat list]]></phrase>
+  <phrase title="admin_navigation.cheats_logs_index" version_id="1" version_string="0.0.1"><![CDATA[Logs]]></phrase>
+  <phrase title="admin_navigation.cheats_upgrades_index" version_id="1" version_string="0.0.1"><![CDATA[Subscriptions]]></phrase>
+</phrases>

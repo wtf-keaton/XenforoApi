@@ -1,0 +1,13 @@
+{
+    "legacy_addon_id": "",
+    "title": "License system by DivanTeam",
+    "description": "API and cheat panel for cheats",
+    "version_id": 1,
+    "version_string": "1.0.0",
+    "dev": "vitt",
+    "dev_url": "https://airflow.su/",
+    "support_url": "",
+    "extra_urls": [],
+    "require": [],
+    "icon": "qumrw.png"
+}
