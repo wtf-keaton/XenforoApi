@@ -35,6 +35,13 @@ class ApiController extends AbstractController
         $request = \XF::app()->request();
 
         $requestMethod = $_SERVER['REQUEST_METHOD'];
+//        if($requestMethod != 'POST') {
+//            $this->outputJson([
+//                'type' => 'error',
+//                'msg' => 'Request method must be POST',
+//            ]);
+//            exit;
+//        }
 
         $method = $_REQUEST['method'] ?? null;
         $methodFunction = null;
@@ -46,7 +53,7 @@ class ApiController extends AbstractController
         if(empty($method) || empty($methodFunction) || !method_exists($this, $methodFunction)) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Can\'t find method',
+                'msg' => 'Method is not exists.',
             ]);
             exit;
         }
@@ -54,7 +61,7 @@ class ApiController extends AbstractController
         if(!$this->checkAuth()) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Data error. Check your username or password!',
+                'msg' => 'Wrong data',
             ]);
             exit;
         }
@@ -62,25 +69,41 @@ class ApiController extends AbstractController
         return $this->$methodFunction();
     }
 
+    private function methodBanUser()
+    {
+        $login = $_REQUEST['user'] ?? null;
+
+        $user = $this->getUser();
+        $userId = $user->user_id;
+
+        \XF::db()->query("
+        UPDATE xf_user
+        SET is_banned = 1
+        WHERE user_id = ? ", [$userId]);
+
+        \XF::db()->insert("xf_user_ban", [
+            'user_id' => 8,
+            'ban_user_id' => $userId,
+            'ban_date' => date('y-m-d'),
+            'end_date' => 0,
+            'user_reason' => "Malicous activity",
+            'triggered' => 1
+        ]);
+    }
+
     /**
-     * user={username}&pass={password}&hwid={hwid}&type={cheat|loader}
+     * user={username}&pass={password}&hwid={hwid}
      */
     private function methodAuth()
     {
         $login = $_REQUEST['user'] ?? null;
         $pass = $_REQUEST['pass'] ?? null;
         $hwid = $_REQUEST['hwid'] ?? null;
-        $type = $_REQUEST['type'] ?? null;
 
         $errors = [];
 
         if(empty($hwid)) {
             $errors[] = 'Parameter "hwid" must be passed.';
-        }
-        if(empty($type)) {
-            $errors[] = 'Parameter "type" must be passed.';
-        } else if(!in_array($type, self::AVAILABLE_TYPES)) {
-            $errors[] = 'Parameter "type" is wrong.';
         }
 
         if(!empty($errors)) {
@@ -103,7 +126,7 @@ class ApiController extends AbstractController
         $this->checkSubscribe();
 
         $hwidEntity = \XF::finder('CheatSite:UserHwid')->where('user_id', $userId)->fetchOne();
-        if(!$hwidEntity || strlen($hwidEntity->hwid) === 0 || $hwidEntity === "NULL") {
+        if(!$hwidEntity || strlen($hwidEntity->hwid) === 0) {
             // set new hwid
             if(!$hwidEntity) {
                 $hwidEntity = \XF::em()->create('CheatSite:UserHwid');
@@ -117,7 +140,7 @@ class ApiController extends AbstractController
             if($hwidEntity->hwid != $hwid) {
                 $this->outputJson([
                     'type' => 'error',
-                    'msg' => 'Wrong HWID',
+                    'msg' => 'HWID Mismatch',
                 ]);
                 exit;
             }
@@ -136,113 +159,16 @@ class ApiController extends AbstractController
             'type' => 'success',
             'data' => [
                 'login' => $user['username'],
-                'sub-date' => date('Y-m-d H:i:s', $date),
+                'sub-date' => date('d/m/Y H:i', $date),
                 'profile-photo' => $avatarUrl,
                 'hwid' => $hwidEntity->hwid,
                 'user-group' => $group ? $group->title : null
             ],
-            'msg' => 'Success authorized in ' . $type,
-        ]);
-        exit;
-    }
-    /**
-     * user={username}&pass={password}&hwid={hwid}
-     */
-    private function methodInfo()
-    {
-        $login = $_REQUEST['user'] ?? null;
-        $pass = $_REQUEST['pass'] ?? null;
-        $hwid = $_REQUEST['hwid'] ?? null;
-
-        $errors = [];
-
-        if(empty($hwid)) {
-            $errors[] = 'Parameter "hwid" must be passed.';
-        }
-
-        if(!empty($errors)) {
-            $this->outputJson([
-                'type' => 'error',
-                'msg' => implode(' ', $errors),
-            ]);
-            exit;
-        }
-
-        $user = $this->getUser();
-        $userId = $user->user_id;
-
-        $logParams = [
-            'method' => 'info',
-            'hwid' => $hwid,
-        ];
-        $this->log($userId, http_build_query($logParams));
-
-        $this->checkSubscribe();
-
-        $hwidEntity = \XF::finder('CheatSite:UserHwid')->where('user_id', $userId)->fetchOne();
-        if(!$hwidEntity || strlen($hwidEntity->hwid) === 0 || $hwidEntity === "NULL") {
-            // set new hwid
-            if(!$hwidEntity) {
-                $hwidEntity = \XF::em()->create('CheatSite:UserHwid');
-            }
-            $hwidEntity->user_id = $userId;
-            $hwidEntity->hwid = $hwid;
-            $hwidEntity->last_change_date = date('Y-m-d H:i:s');
-            $hwidEntity->save();
-        } else {
-            // check hwid
-            if($hwidEntity->hwid != $hwid) {
-                $this->outputJson([
-                    'type' => 'error',
-                    'msg' => 'Wrong HWID',
-                ]);
-                exit;
-            }
-        }
-
-        $group = \XF::finder('XF:UserGroup')->where('user_group_id', $user->user_group_id)->fetchOne();
-        $avatarUrl = $user->getAvatarUrl('o', null, true);
-
-        $activeUpgrades = $this->getActiveUpgrades();
-        $date = 0;
-        foreach($activeUpgrades as $upgrade) {
-            $date = max($upgrade->end_date, $date);
-        }
-        if( strlen( $avatarUrl ) === 0 ){
-            $avatarUrl = "None";
-        }
-
-        $this->outputJson([
-            'data' => [
-                'login' => $user['username'],
-                'sub-date' => date('d/m/Y', $date),
-                'profile-photo' => $avatarUrl,
-                'hwid' => $hwidEntity->hwid,
-                'user-group' => $group ? $group->title : null
-            ]
+            'msg' => 'Success'
         ]);
         exit;
     }
 
-    private function methodBanUser()
-    {
-        $user = $this->getUser();
-        $userId = $user->user_id;
-
-        \XF::db()->query("
-        UPDATE xf_user
-        SET is_banned = 1
-        WHERE user_id = ? ", [$userId]);
-
-        \XF::db()->insert("xf_user_ban", [
-            'user_id' => 8,
-            'ban_user_id' => $userId,
-            'ban_date' => date('y-m-d'),
-            'end_date' => 0,
-            'user_reason' => "Malicous activity",
-            'triggered' => 1
-        ]);
-    }
     private function methodDll()
     {
         $hwid = $_REQUEST['hwid'] ?? null;
@@ -262,7 +188,7 @@ class ApiController extends AbstractController
         if(empty($hwid) || $hwidEntity->hwid != $hwid) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Wrong HWID'
+                'msg' => 'HWID is illegal.'
             ]);
             exit;
         }
@@ -273,7 +199,7 @@ class ApiController extends AbstractController
         if($cheatsCount == 0) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Can\'t find active subsribe'
+                'msg' => 'The user has no active cheats.'
             ]);
             exit;
         }
@@ -306,7 +232,7 @@ class ApiController extends AbstractController
         if(empty($hwid) || $hwidEntity->hwid != $hwid) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Wrong HWID'
+                'msg' => 'HWID is illegal.'
             ]);
             exit;
         }
@@ -318,7 +244,7 @@ class ApiController extends AbstractController
             if(empty($hwid) || $hwidEntity->hwid != $hwid) {
                 $this->outputJson([
                     'type' => 'error',
-                    'msg' => 'Can\'t find active subsribe'
+                    'msg' => 'The user has no active cheats.'
                 ]);
                 exit;
             }
@@ -400,7 +326,7 @@ class ApiController extends AbstractController
         if($user->is_banned) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Account banned',
+                'msg' => 'The user is banned.',
             ]);
             exit;
         }
@@ -413,17 +339,17 @@ class ApiController extends AbstractController
         if(!count($activeUpgrades) && !count($cheats)) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Don\'t found active subscribe',
+                'msg' => 'The user has not a subscribe.',
             ]);
             exit;
         }
 
         $isFrozen = !count($activeUpgrades) && !count($cheats) && count($frozenUpgrades);
-        
+
         if($isFrozen) {
             $this->outputJson([
                 'type' => 'error',
-                'msg' => 'Subscribe freezed',
+                'msg' => 'The subscribe is frozen.',
             ]);
             exit;
         }

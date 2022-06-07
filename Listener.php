@@ -20,12 +20,18 @@ class Listener
             return;
         }
 
+//        $navigationFlat['cheatsDownload'] = [
+//            'title' => 'Download',
+//            'href' => \XF::app()->router('public')->buildLink('cheatsPanel/download'),
+//            'attributes' => []
+//        ];
         $navigationFlat['cheatsPanel'] = [
             'title' => 'Cheats panel',
             'href' => \XF::app()->router('public')->buildLink('cheatsPanel/index'),
             'attributes' => []
         ];
 
+//        $navigationTree['cheatsDownload'] = $navigationFlat['cheatsDownload'];
         $navigationTree['cheatsPanel'] = $navigationFlat['cheatsPanel'];
     }
 }
