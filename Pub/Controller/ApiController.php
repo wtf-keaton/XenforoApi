@@ -374,7 +374,6 @@ class ApiController extends AbstractController
         }
 
         $db = \XF::db();
-
         $user = \XF::finder('XF:User')->where('username', $login)->fetchOne();
         if(!$user) {
             return false;
@@ -383,9 +382,13 @@ class ApiController extends AbstractController
         $this->user = $user;
 
         $authRecord = $db->fetchRow('SELECT * FROM xf_user_authenticate WHERE user_id = ?', $user['user_id']);
+        $banned = $db->fetchOne('SELECT is_banned from xf_user WHERE user_id = ?', $user['user_id']);
         $data = unserialize($authRecord['data']);
         $hash = $data['hash'] ?? null;
         if(!$hash) {
+            return false;
+        }
+        if($banned) {
             return false;
         }
         $isVerify = password_verify($pass, $hash);
