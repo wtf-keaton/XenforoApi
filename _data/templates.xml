@@ -40,7 +40,7 @@
 		</dl>
 		<dl class="formRow formRow--input formRow--fullWidth">
 			<dt class="formRow-labelWrapper">
-				<label class="formRow-label">Cheat DLL</label>
+				<label class="formRow-label">DLL file</label>
 			</dt>
 			<dd>
 				<xf:if is="$cheat.id">
@@ -53,7 +53,7 @@
 		</dl>
 		<dl class="formRow formRow--input formRow--fullWidth">
 			<dt class="formRow-labelWrapper">
-				<label class="formRow-label">Driver file ( If needed )</label>
+				<label class="formRow-label">SYS file</label>
 			</dt>
 			<dd>
 				<xf:if is="$cheat.id">
@@ -87,7 +87,7 @@
 					  arg-cheat="{{ $cheat }}"
 					  arg-groupOptions="{{ $groupOptions }}"
 					  arg-errors="{{ $errors }}"
-			/>В
+			/>
 		</div>
 	</div>
 </div>
@@ -382,12 +382,26 @@
                 <h2 class="block-header">{{ $upgrade.Upgrade.title }}</h2>
                 <div class="block-body" style="padding: 5px 10px 5px 10px;">
                     <p>
-					        <xf:if is="$upgrade.end_date != 0">
+					    Start subscribtion: {{ date($upgrade.start_date, 'd/m/Y H:i') }}<br />
+
+                        <xf:if is="$upgrade.end_date != 0">
                             Subscribe until: &nbsp;<b>{{ date($upgrade.end_date, 'd/m/Y H:i') }}</b>
                             <xf:else/>
-                            Subscribe until: <b>Lifetime</b>
+                            Subscribe until: <b>Life Time</b>
                         </xf:if>
                     </p>
+
+                    <xf:if is="$type == 'frozen'">
+                        <p>
+                            <button type="button" class="button button--primary">Frozen at {{ date($upgrade.freeze_date, 'd/m/Y H:i') }}</button>
+                            &nbsp; Time left: <b>{{ $upgrade.leftTimeFormatted }}</b>
+                        </p>
+                    <xf:else></xf:else>
+                        <a href="{{ link('user-upgrades/edit-active', $upgrade, {'user_upgrade_record_id': $upgrade.user_upgrade_record_id}) }}"
+                           class="button">
+                            Edit subscription
+                        </a>
+                    </xf:if>
                 </div>
             </div>
         </div>
@@ -490,7 +504,7 @@
 		</div>
 	</div>
 </div>]]></template>
-  <template type="public" title="cheats_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Cheats panel</xf:title>
+  <template type="public" title="cheats_index" version_id="1" version_string="0.0.1"><![CDATA[<xf:title>Data</xf:title>
 <xf:if is="$errors">
 	<div class="blockMessage blockMessage--error blockMessage--iconic">
 		<xf:foreach loop="$errors" value="$error">
@@ -514,9 +528,41 @@
 						<xf:if is="$upgrade.end_date != 0">
 							Subscribe until: &nbsp;<b>{{ date($upgrade.end_date, 'd/m/Y H:i') }}</b>
 						<xf:else/>
-							Subscribe until: <b>Lifetime</b>
+							Subscribe until: <b>Life Time</b>
 						</xf:if>
 					</p>
+
+					<xf:if is="$type == 'frozen'">
+						<div class="blockMessage blockMessage--highlight">
+							The subscribe is frozen.
+							<br />
+							Time left: <b>{{ $upgrade.leftTimeFormatted }}</b>
+							<xf:form method="post">
+								<button type="submit" name="unfreezeUpgrade" class="button"
+										value="{{ $upgradeRecordId }}"><span class="button-text">Unfreeze</span></button>
+							</xf:form>
+						</div>
+					<xf:else is="$upgrade.end_date != 0" />
+						<xf:foreach loop="$canFreezeUpgrades" value="$canFreezeUpgrade" key="$upgradeRecordId">
+							<xf:if is="$upgradeRecordId == $upgrade.user_upgrade_record_id">
+								<xf:if is="$canFreezeUpgrade">
+									<xf:form method="post">
+										<button type="submit" name="freezeUpgrade" class="button"
+												value="{{ $upgradeRecordId }}"><span class="button-text">Freeze</span></button>
+									</xf:form>
+								</xf:if>
+
+							</xf:if>
+						</xf:foreach>
+
+						<xf:foreach loop="$lastFreezeDates" value="$lastFreeze"  key="$upgradeRecordId">
+							<xf:if is="$upgradeRecordId == $upgrade.user_upgrade_record_id">
+								<xf:if is="$lastFreeze">
+									<p>Last freezing was at {{ date($lastFreeze.date, 'd/m/Y H:i') }}</p>
+								</xf:if>
+							</xf:if>
+						</xf:foreach>
+					</xf:if>
 				</div>
 			</div>
 		</div>
